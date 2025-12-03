@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>تاکسی سرویس هوشمند</title>
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="apple-touch-icon" href="/icon.svg" />
+    <meta name="theme-color" content="#EAB308" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'media', // Respect system preference
+      }
+    </script>
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+    <style>
+      body {
+        font-family: 'Vazirmatn', sans-serif;
+      }
+      
+      /* Print specific styles */
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        
+        body {
+          background-color: white;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+
+        /* Hide all non-printable elements */
+        .no-print {
+          display: none !important;
+        }
+
+        /* Reset layout for print */
+        #root, main, body {
+          width: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          display: block !important;
+          height: auto !important;
+          overflow: visible !important;
+        }
+
+        /* Target the invoice preview specifically */
+        .print-area {
+          display: block !important;
+          position: absolute !important;
+          top: 0 !important;
+          left: 0 !important;
+          width: 100% !important;
+          height: auto !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          border: none !important;
+          box-shadow: none !important;
+          background-color: white !important;
+        }
+
+        /* Ensure content fits A4 width */
+        .print-container {
+          width: 100% !important;
+          max-width: 210mm !important;
+          margin: 0 auto !important;
+          padding: 20px !important;
+          box-shadow: none !important;
+        }
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.555.0",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-gray-100 dark:bg-gray-900 transition-colors duration-200">
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>

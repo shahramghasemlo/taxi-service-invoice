@@ -1,0 +1,5 @@
+{
+  "name": "Taxi Service Invoice",
+  "description": "A professional invoice generator tailored for airport transfers and taxi services with AI capabilities.",
+  "requestFramePermissions": []
+}
