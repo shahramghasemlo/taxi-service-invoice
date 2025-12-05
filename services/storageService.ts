@@ -2,6 +2,14 @@
 import { supabase } from './supabaseClient';
 import { Customer, CompanyInfo, ExpenseCategory, Expense } from '../types';
 
+// Get current authenticated user ID
+const getCurrentUserId = async (): Promise<string> => {
+    if (!supabase) throw new Error('Supabase not initialized');
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('کاربر وارد سیستم نشده است');
+    return user.id;
+};
+
 // Customer Management
 export const getCustomers = async (): Promise<Customer[]> => {
     const { data, error } = await supabase
@@ -16,6 +24,7 @@ export const getCustomers = async (): Promise<Customer[]> => {
 };
 
 export const saveCustomer = async (customer: Customer): Promise<void> => {
+    const userId = await getCurrentUserId();
     // Map camelCase to snake_case for database
     const payload = {
         id: customer.id,
@@ -24,7 +33,8 @@ export const saveCustomer = async (customer: Customer): Promise<void> => {
         phone: customer.phone,
         address: customer.address,
         notes: customer.notes,
-        created_at: customer.createdAt
+        created_at: customer.createdAt,
+        user_id: userId
     };
 
     const { error } = await supabase
@@ -80,8 +90,9 @@ export const getCompanyInfo = async (): Promise<CompanyInfo | null> => {
 };
 
 export const saveCompanyInfo = async (info: CompanyInfo): Promise<void> => {
-    // Ensure we always update the same row for company info
-    const payload = { ...info, id: 'default' };
+    const userId = await getCurrentUserId();
+    // Each user has their own company info row
+    const payload = { ...info, id: userId, user_id: userId };
     const { error } = await supabase
         .from('company_info')
         .upsert(payload);
@@ -104,15 +115,16 @@ export const getCategories = async (): Promise<ExpenseCategory[]> => {
     }
 
     if (!data || data.length === 0) {
-        // Seed default categories if none exist
+        // Seed default categories if none exist for this user
+        const userId = await getCurrentUserId();
         const defaultCategories: ExpenseCategory[] = [
-            { id: '1', title: 'سوخت و انرژی', color: '#ef4444', icon: 'Fuel', isDefault: true },
-            { id: '2', title: 'تعمیرات و سرویس', color: '#f97316', icon: 'Wrench', isDefault: true },
-            { id: '3', title: 'لوازم یدکی', color: '#3b82f6', icon: 'Settings', isDefault: true },
-            { id: '4', title: 'بیمه و عوارض', color: '#8b5cf6', icon: 'FileText', isDefault: true },
-            { id: '5', title: 'نظافت و کارواش', color: '#06b6d4', icon: 'Droplets', isDefault: true },
-            { id: '6', title: 'جریمه‌ها', color: '#64748b', icon: 'AlertTriangle', isDefault: true },
-            { id: '7', title: 'سایر هزینه‌ها', color: '#94a3b8', icon: 'MoreHorizontal', isDefault: true },
+            { id: `${userId}-1`, title: 'سوخت و انرژی', color: '#ef4444', icon: 'Fuel', isDefault: true },
+            { id: `${userId}-2`, title: 'تعمیرات و سرویس', color: '#f97316', icon: 'Wrench', isDefault: true },
+            { id: `${userId}-3`, title: 'لوازم یدکی', color: '#3b82f6', icon: 'Settings', isDefault: true },
+            { id: `${userId}-4`, title: 'بیمه و عوارض', color: '#8b5cf6', icon: 'FileText', isDefault: true },
+            { id: `${userId}-5`, title: 'نظافت و کارواش', color: '#06b6d4', icon: 'Droplets', isDefault: true },
+            { id: `${userId}-6`, title: 'جریمه‌ها', color: '#64748b', icon: 'AlertTriangle', isDefault: true },
+            { id: `${userId}-7`, title: 'سایر هزینه‌ها', color: '#94a3b8', icon: 'MoreHorizontal', isDefault: true },
         ];
 
         // Insert defaults (map to snake_case for DB)
@@ -121,7 +133,8 @@ export const getCategories = async (): Promise<ExpenseCategory[]> => {
             title: c.title,
             color: c.color,
             icon: c.icon,
-            is_default: c.isDefault
+            is_default: c.isDefault,
+            user_id: userId
         }));
 
         const { error: insertError } = await supabase
@@ -145,6 +158,7 @@ export const getCategories = async (): Promise<ExpenseCategory[]> => {
 };
 
 export const saveCategory = async (category: ExpenseCategory): Promise<void> => {
+    const userId = await getCurrentUserId();
     const { error } = await supabase
         .from('expense_categories')
         .upsert({
@@ -152,7 +166,8 @@ export const saveCategory = async (category: ExpenseCategory): Promise<void> => 
             title: category.title,
             color: category.color,
             icon: category.icon, // Store icon name as string
-            is_default: category.isDefault
+            is_default: category.isDefault,
+            user_id: userId
         });
 
     if (error) {
@@ -194,12 +209,14 @@ export const getExpenses = async (): Promise<Expense[]> => {
 };
 
 export const saveExpense = async (expense: Expense): Promise<void> => {
+    const userId = await getCurrentUserId();
     const payload = {
         id: expense.id,
         amount: expense.amount,
         date: expense.date,
         description: expense.description,
-        category_id: expense.categoryId
+        category_id: expense.categoryId,
+        user_id: userId
     };
 
     const { error } = await supabase
