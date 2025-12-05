@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Car,
   BookOpen,
@@ -12,23 +12,75 @@ import { InvoiceDashboard } from './components/invoice/InvoiceDashboard';
 import { AccountingDashboard } from './components/accounting/AccountingDashboard';
 import { downloadBackup } from './services/backupService';
 
+import { supabase } from './services/supabaseClient';
+import { LoginPage } from './components/auth/LoginPage';
+
 type Module = 'invoice' | 'accounting';
 
 const App: React.FC = () => {
+  const [session, setSession] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [currentModule, setCurrentModule] = useState<Module>('invoice');
   const [showHelp, setShowHelp] = useState(false);
   const [isExited, setIsExited] = useState(false);
 
-  const handleExit = () => {
-    if (confirm('آیا می‌خواهید از برنامه خارج شوید؟ یک نسخه پشتیبان از اطلاعات شما دانلود خواهد شد.')) {
-      const success = downloadBackup();
-      if (success) {
-        setIsExited(true);
-      } else {
-        alert('خطا در تهیه نسخه پشتیبان. لطفاً دوباره تلاش کنید.');
-      }
+  useEffect(() => {
+    if (!supabase) return;
+
+    // Check active session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+    });
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (!supabase) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 p-4" dir="rtl">
+        <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl max-w-lg w-full text-center border-t-4 border-red-500">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">خطا در تنظیمات</h1>
+          <p className="text-gray-700 dark:text-gray-300 mb-6">
+            اطلاعات اتصال به Supabase یافت نشد.
+          </p>
+          <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg text-left text-sm font-mono mb-6 overflow-x-auto">
+            <p className="text-gray-500 mb-2">Please create .env.local file:</p>
+            <code className="block text-blue-600 dark:text-blue-400">VITE_SUPABASE_URL=...</code>
+            <code className="block text-blue-600 dark:text-blue-400">VITE_SUPABASE_ANON_KEY=...</code>
+          </div>
+          <p className="text-sm text-gray-500">
+            لطفاً طبق راهنما، فایل .env.local را ایجاد کنید.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const handleExit = async () => {
+    if (confirm('آیا می‌خواهید از حساب کاربری خود خارج شوید؟')) {
+      await supabase?.auth.signOut();
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500"></div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return <LoginPage onLoginSuccess={() => { }} />;
+  }
 
   if (isExited) {
     return (
@@ -39,18 +91,13 @@ const App: React.FC = () => {
           </div>
           <h1 className="text-3xl font-bold">خداحافظ! 👋</h1>
           <p className="text-gray-300 text-lg">
-            اطلاعات شما با موفقیت ذخیره شد.
-            <br />
-            فایل پشتیبان دانلود شد.
-          </p>
-          <p className="text-sm text-gray-500">
-            اکنون می‌توانید این پنجره را ببندید.
+            با موفقیت خارج شدید.
           </p>
           <button
             onClick={() => window.location.reload()}
             className="mt-8 text-blue-400 hover:text-blue-300 underline"
           >
-            بازگشت به برنامه
+            بازگشت به صفحه ورود
           </button>
         </div>
       </div>

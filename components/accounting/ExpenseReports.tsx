@@ -21,8 +21,15 @@ export const ExpenseReports: React.FC = () => {
     const [dateRange, setDateRange] = useState<DateRange>('thisMonth');
 
     useEffect(() => {
-        setExpenses(getExpenses());
-        setCategories(getCategories());
+        const loadData = async () => {
+            const [expensesData, categoriesData] = await Promise.all([
+                getExpenses(),
+                getCategories()
+            ]);
+            setExpenses(expensesData);
+            setCategories(categoriesData);
+        };
+        loadData();
     }, []);
 
     const filterExpensesByDate = (expenses: Expense[], range: DateRange) => {

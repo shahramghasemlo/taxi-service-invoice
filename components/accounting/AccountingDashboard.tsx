@@ -27,9 +27,13 @@ export const AccountingDashboard: React.FC = () => {
         loadData();
     }, [activeTab]); // Reload data when tab changes
 
-    const loadData = () => {
-        setExpenses(getExpenses());
-        setCategories(getCategories());
+    const loadData = async () => {
+        const [expensesData, categoriesData] = await Promise.all([
+            getExpenses(),
+            getCategories()
+        ]);
+        setExpenses(expensesData);
+        setCategories(categoriesData);
     };
 
     const calculateCategoryTotals = () => {
@@ -171,57 +175,64 @@ export const AccountingDashboard: React.FC = () => {
             </div>
 
             {/* Navigation Tabs */}
-            <div className="flex overflow-x-auto gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
-                <button
-                    onClick={() => setActiveTab('dashboard')}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${activeTab === 'dashboard'
-                        ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
-                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
-                        }`}
-                >
-                    <LayoutDashboard size={18} />
-                    داشبورد
-                </button>
-                <button
-                    onClick={() => setActiveTab('add')}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${activeTab === 'add'
-                        ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
-                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
-                        }`}
-                >
-                    <PlusCircle size={18} />
-                    ثبت هزینه
-                </button>
-                <button
-                    onClick={() => setActiveTab('history')}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${activeTab === 'history'
-                        ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
-                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
-                        }`}
-                >
-                    <History size={18} />
-                    تاریخچه
-                </button>
-                <button
-                    onClick={() => setActiveTab('categories')}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${activeTab === 'categories'
-                        ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
-                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
-                        }`}
-                >
-                    <Tags size={18} />
-                    سرفصل‌ها
-                </button>
-                <button
-                    onClick={() => setActiveTab('reports')}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${activeTab === 'reports'
-                        ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
-                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
-                        }`}
-                >
-                    <BarChart3 size={18} />
-                    گزارشات
-                </button>
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-2 shadow-sm border border-gray-200 dark:border-gray-700">
+                <div className="grid grid-cols-5 gap-1">
+                    <button
+                        onClick={() => setActiveTab('dashboard')}
+                        className={`flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 p-2 md:px-4 md:py-2 rounded-lg font-medium transition-colors text-xs md:text-sm ${activeTab === 'dashboard'
+                            ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
+                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+                            }`}
+                    >
+                        <LayoutDashboard size={18} />
+                        <span className="hidden sm:inline">داشبورد</span>
+                        <span className="sm:hidden text-[10px]">داشبورد</span>
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('add')}
+                        className={`flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 p-2 md:px-4 md:py-2 rounded-lg font-medium transition-colors text-xs md:text-sm ${activeTab === 'add'
+                            ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
+                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+                            }`}
+                    >
+                        <PlusCircle size={18} />
+                        <span className="hidden sm:inline">ثبت هزینه</span>
+                        <span className="sm:hidden text-[10px]">ثبت</span>
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('history')}
+                        className={`flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 p-2 md:px-4 md:py-2 rounded-lg font-medium transition-colors text-xs md:text-sm ${activeTab === 'history'
+                            ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
+                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+                            }`}
+                    >
+                        <History size={18} />
+                        <span className="hidden sm:inline">تاریخچه</span>
+                        <span className="sm:hidden text-[10px]">تاریخچه</span>
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('categories')}
+                        className={`flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 p-2 md:px-4 md:py-2 rounded-lg font-medium transition-colors text-xs md:text-sm ${activeTab === 'categories'
+                            ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
+                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+                            }`}
+                    >
+                        <Tags size={18} />
+                        <span className="hidden sm:inline">سرفصل‌ها</span>
+                        <span className="sm:hidden text-[10px]">سرفصل</span>
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('reports')}
+                        className={`flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 p-2 md:px-4 md:py-2 rounded-lg font-medium transition-colors text-xs md:text-sm ${activeTab === 'reports'
+                            ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
+                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+                            }`}
+                    >
+                        <BarChart3 size={18} />
+                        <span className="hidden sm:inline">گزارشات</span>
+                        <span className="sm:hidden text-[10px]">گزارش</span>
+                    </button>
+                </div>
             </div>
 
             {/* Content Area */}

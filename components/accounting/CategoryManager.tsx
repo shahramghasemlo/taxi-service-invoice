@@ -57,12 +57,12 @@ export const CategoryManager: React.FC = () => {
         loadCategories();
     }, []);
 
-    const loadCategories = () => {
-        const data = getCategories();
+    const loadCategories = async () => {
+        const data = await getCategories();
         setCategories(data);
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (!formData.title) {
             alert('عنوان دسته‌بندی الزامی است');
             return;
@@ -77,7 +77,7 @@ export const CategoryManager: React.FC = () => {
         };
 
         try {
-            saveCategory(category);
+            await saveCategory(category);
             loadCategories();
             handleCancel();
         } catch (error) {
@@ -91,10 +91,10 @@ export const CategoryManager: React.FC = () => {
         setIsAdding(false);
     };
 
-    const handleDelete = (id: string) => {
+    const handleDelete = async (id: string) => {
         if (confirm('آیا از حذف این دسته‌بندی مطمئن هستید؟')) {
             try {
-                deleteCategory(id);
+                await deleteCategory(id);
                 loadCategories();
             } catch (error) {
                 alert('خطا در حذف دسته‌بندی');
@@ -177,8 +177,8 @@ export const CategoryManager: React.FC = () => {
                                         key={name}
                                         onClick={() => setFormData({ ...formData, icon: name })}
                                         className={`p-2 rounded-lg border transition-colors ${formData.icon === name
-                                                ? 'bg-blue-100 border-blue-500 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300'
-                                                : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400'
+                                            ? 'bg-blue-100 border-blue-500 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300'
+                                            : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400'
                                             }`}
                                     >
                                         <Icon size={20} />

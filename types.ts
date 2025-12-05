@@ -63,12 +63,17 @@ export interface InvoiceData {
 }
 
 // Helper to format date in Persian Calendar
-const getPersianDate = (date: Date) => {
-  return new Intl.DateTimeFormat('fa-IR', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  }).format(date);
+export const getPersianDate = (date: Date | string) => {
+  try {
+    const d = typeof date === 'string' ? new Date(date) : date;
+    return new Intl.DateTimeFormat('fa-IR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).format(d);
+  } catch (e) {
+    return '';
+  }
 };
 
 export const initialInvoiceState: InvoiceData = {

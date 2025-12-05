@@ -1,7 +1,8 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { LineItem } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const apiKey = process.env.API_KEY;
+const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
 const lineItemsSchema: Schema = {
   type: Type.ARRAY,
@@ -17,6 +18,11 @@ const lineItemsSchema: Schema = {
 };
 
 export const generateLineItemsFromText = async (prompt: string): Promise<Omit<LineItem, 'id'>[]> => {
+  if (!ai) {
+    console.warn("Google Gemini API Key is missing.");
+    throw new Error("API Key تنظیم نشده است. لطفاً کلید API را در فایل .env اضافه کنید.");
+  }
+
   try {
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
@@ -30,7 +36,7 @@ export const generateLineItemsFromText = async (prompt: string): Promise<Omit<Li
 
     const text = response.text;
     if (!text) return [];
-    
+
     return JSON.parse(text) as Omit<LineItem, 'id'>[];
   } catch (error) {
     console.error("Error generating line items:", error);

@@ -17,25 +17,25 @@ export const CompanySettings: React.FC = () => {
         loadCompanyInfo();
     }, []);
 
-    const loadCompanyInfo = () => {
-        const data = getCompanyInfo();
+    const loadCompanyInfo = async () => {
+        const data = await getCompanyInfo();
         if (data) {
             setFormData(data);
         }
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (!formData.name || !formData.phone) {
             alert('نام شرکت و تلفن الزامی است');
             return;
         }
 
         try {
-            saveCompanyInfo(formData);
+            await saveCompanyInfo(formData);
             setIsSaved(true);
             setTimeout(() => setIsSaved(false), 3000);
-        } catch (error) {
-            alert('خطا در ذخیره اطلاعات');
+        } catch (error: any) {
+            alert(`خطا در ذخیره اطلاعات: ${error.message || error}`);
         }
     };
 

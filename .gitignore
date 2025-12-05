@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Debug scripts
+debug_*.ts
+reproduce_*.ts

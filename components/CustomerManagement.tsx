@@ -20,12 +20,12 @@ export const CustomerManagement: React.FC = () => {
         loadCustomers();
     }, []);
 
-    const loadCustomers = () => {
-        const data = getCustomers();
+    const loadCustomers = async () => {
+        const data = await getCustomers();
         setCustomers(data);
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (!formData.name || !formData.phone) {
             alert('نام و تلفن الزامی است');
             return;
@@ -42,11 +42,11 @@ export const CustomerManagement: React.FC = () => {
         };
 
         try {
-            saveCustomer(customer);
+            await saveCustomer(customer);
             loadCustomers();
             handleCancel();
-        } catch (error) {
-            alert('خطا در ذخیره مشتری');
+        } catch (error: any) {
+            alert(`خطا در ذخیره مشتری: ${error.message || error}`);
         }
     };
 
@@ -56,10 +56,10 @@ export const CustomerManagement: React.FC = () => {
         setIsAdding(false);
     };
 
-    const handleDelete = (id: string) => {
+    const handleDelete = async (id: string) => {
         if (confirm('آیا از حذف این مشتری مطمئن هستید؟')) {
             try {
-                deleteCustomer(id);
+                await deleteCustomer(id);
                 loadCustomers();
             } catch (error) {
                 alert('خطا در حذف مشتری');

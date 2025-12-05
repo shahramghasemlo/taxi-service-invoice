@@ -20,7 +20,7 @@ import { InvoicePreview } from '../InvoicePreview';
 import { CustomerManagement } from '../CustomerManagement';
 import { CompanySettings } from '../CompanySettings';
 import { generateLineItemsFromText } from '../../services/geminiService';
-import { getCustomers, getCompanyInfo } from '../../services/storageService';
+import { getCustomers, getCompanyInfo, saveCustomer } from '../../services/storageService';
 
 type Page = 'invoice' | 'customers' | 'settings';
 
@@ -33,6 +33,12 @@ export const InvoiceDashboard: React.FC = () => {
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [selectedCustomerId, setSelectedCustomerId] = useState<string>('');
 
+    // Quick Add Customer State
+    const [isAddCustomerOpen, setIsAddCustomerOpen] = useState(false);
+    const [newCustomerName, setNewCustomerName] = useState('');
+    const [newCustomerPhone, setNewCustomerPhone] = useState('');
+    const [isSavingCustomer, setIsSavingCustomer] = useState(false);
+
     const componentRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -40,13 +46,13 @@ export const InvoiceDashboard: React.FC = () => {
         loadCompanyInfo();
     }, []);
 
-    const loadCustomers = () => {
-        const customerList = getCustomers();
+    const loadCustomers = async () => {
+        const customerList = await getCustomers();
         setCustomers(customerList);
     };
 
-    const loadCompanyInfo = () => {
-        const companyInfo = getCompanyInfo();
+    const loadCompanyInfo = async () => {
+        const companyInfo = await getCompanyInfo();
         if (companyInfo) {
             setData(prev => ({
                 ...prev,
@@ -161,11 +167,46 @@ export const InvoiceDashboard: React.FC = () => {
                 items: [...prev.items, ...itemsWithIds]
             }));
             setAiPrompt('');
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            alert('خطا در تولید آیتم‌ها. لطفاً دوباره تلاش کنید.');
+            alert(error.message || 'خطا در تولید آیتم‌ها. لطفاً دوباره تلاش کنید.');
         } finally {
             setIsGenerating(false);
+        }
+    };
+
+    const handleQuickAddCustomer = async () => {
+        if (!newCustomerName || !newCustomerPhone) {
+            alert('لطفاً نام و شماره تماس را وارد کنید.');
+            return;
+        }
+
+        setIsSavingCustomer(true);
+        try {
+            const newCustomer: Customer = {
+                id: Date.now().toString(),
+                name: newCustomerName,
+                phone: newCustomerPhone,
+                email: '',
+                address: '',
+                createdAt: new Date().toISOString()
+            };
+
+            await saveCustomer(newCustomer);
+            await loadCustomers(); // Reload list
+
+            // Select the new customer
+            handleCustomerSelect(newCustomer.id);
+
+            // Reset and close
+            setNewCustomerName('');
+            setNewCustomerPhone('');
+            setIsAddCustomerOpen(false);
+        } catch (error: any) {
+            console.error('Error adding customer:', error);
+            alert(`خطا در ثبت مشتری: ${error.message || error}`);
+        } finally {
+            setIsSavingCustomer(false);
         }
     };
 
@@ -318,18 +359,75 @@ export const InvoiceDashboard: React.FC = () => {
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     انتخاب از لیست مشتریان
                                 </label>
-                                <select
-                                    value={selectedCustomerId}
-                                    onChange={(e) => handleCustomerSelect(e.target.value)}
-                                    className="w-full rounded-lg border-gray-300 dark:border-gray-600 border p-2 text-sm dark:bg-gray-700 dark:text-white"
-                                >
-                                    <option value="">-- ورود دستی --</option>
-                                    {customers.map(customer => (
-                                        <option key={customer.id} value={customer.id}>
-                                            {customer.name} ({customer.phone})
-                                        </option>
-                                    ))}
-                                </select>
+                                <div className="flex gap-2">
+                                    <select
+                                        value={selectedCustomerId}
+                                        onChange={(e) => handleCustomerSelect(e.target.value)}
+                                        className="w-full rounded-lg border-gray-300 dark:border-gray-600 border p-2 text-sm dark:bg-gray-700 dark:text-white"
+                                    >
+                                        <option value="">-- ورود دستی --</option>
+                                        {customers.map(customer => (
+                                            <option key={customer.id} value={customer.id}>
+                                                {customer.name} ({customer.phone})
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <button
+                                        onClick={() => setIsAddCustomerOpen(true)}
+                                        className="bg-blue-50 text-blue-600 p-2 rounded-lg hover:bg-blue-100 transition-colors"
+                                        title="افزودن مشتری جدید"
+                                    >
+                                        <Plus size={20} />
+                                    </button>
+                                </div>
+
+                                {/* Quick Add Customer Modal */}
+                                {isAddCustomerOpen && (
+                                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                                        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-sm shadow-2xl">
+                                            <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">افزودن مشتری جدید</h3>
+                                            <div className="space-y-4">
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">نام مشتری</label>
+                                                    <input
+                                                        type="text"
+                                                        value={newCustomerName}
+                                                        onChange={(e) => setNewCustomerName(e.target.value)}
+                                                        className="w-full rounded-lg border-gray-300 dark:border-gray-600 border p-2 text-sm dark:bg-gray-700 dark:text-white"
+                                                        placeholder="مثال: شرکت افق"
+                                                        autoFocus
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">شماره تماس</label>
+                                                    <input
+                                                        type="text"
+                                                        value={newCustomerPhone}
+                                                        onChange={(e) => setNewCustomerPhone(e.target.value)}
+                                                        className="w-full rounded-lg border-gray-300 dark:border-gray-600 border p-2 text-sm dark:bg-gray-700 dark:text-white"
+                                                        placeholder="مثال: 0912..."
+                                                    />
+                                                </div>
+                                                <div className="flex gap-2 pt-2">
+                                                    <button
+                                                        onClick={() => setIsAddCustomerOpen(false)}
+                                                        className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                                    >
+                                                        انصراف
+                                                    </button>
+                                                    <button
+                                                        onClick={handleQuickAddCustomer}
+                                                        disabled={isSavingCustomer}
+                                                        className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                                                    >
+                                                        {isSavingCustomer ? <Loader2 className="animate-spin" size={16} /> : <Plus size={16} />}
+                                                        افزودن
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                             <div className="space-y-3">
                                 <input
@@ -551,7 +649,7 @@ export const InvoiceDashboard: React.FC = () => {
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 
     const renderContent = () => {

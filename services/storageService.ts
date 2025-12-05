@@ -1,83 +1,109 @@
-// LocalStorage service for managing customers and company info
-
+// Supabase service for managing data
+import { supabase } from './supabaseClient';
 import { Customer, CompanyInfo, ExpenseCategory, Expense } from '../types';
 
-const CUSTOMERS_KEY = 'taxi-invoice-customers';
-const COMPANY_KEY = 'taxi-invoice-company';
-const CATEGORIES_KEY = 'taxi-invoice-categories';
-const EXPENSES_KEY = 'taxi-invoice-expenses';
-
 // Customer Management
-export const getCustomers = (): Customer[] => {
-    try {
-        const data = localStorage.getItem(CUSTOMERS_KEY);
-        return data ? JSON.parse(data) : [];
-    } catch (error) {
+export const getCustomers = async (): Promise<Customer[]> => {
+    const { data, error } = await supabase
+        .from('customers')
+        .select('*');
+
+    if (error) {
         console.error('Error loading customers:', error);
         return [];
     }
+    return data || [];
 };
 
-export const saveCustomer = (customer: Customer): void => {
-    try {
-        const customers = getCustomers();
-        const existingIndex = customers.findIndex(c => c.id === customer.id);
+export const saveCustomer = async (customer: Customer): Promise<void> => {
+    // Map camelCase to snake_case for database
+    const payload = {
+        id: customer.id,
+        name: customer.name,
+        email: customer.email,
+        phone: customer.phone,
+        address: customer.address,
+        notes: customer.notes,
+        created_at: customer.createdAt
+    };
 
-        if (existingIndex >= 0) {
-            customers[existingIndex] = customer;
-        } else {
-            customers.push(customer);
-        }
+    const { error } = await supabase
+        .from('customers')
+        .upsert(payload);
 
-        localStorage.setItem(CUSTOMERS_KEY, JSON.stringify(customers));
-    } catch (error) {
+    if (error) {
         console.error('Error saving customer:', error);
-        throw new Error('خطا در ذخیره مشتری');
+        throw new Error(error.message || 'خطا در ذخیره مشتری');
     }
 };
 
-export const deleteCustomer = (id: string): void => {
-    try {
-        const customers = getCustomers();
-        const filtered = customers.filter(c => c.id !== id);
-        localStorage.setItem(CUSTOMERS_KEY, JSON.stringify(filtered));
-    } catch (error) {
+export const deleteCustomer = async (id: string): Promise<void> => {
+    const { error } = await supabase
+        .from('customers')
+        .delete()
+        .eq('id', id);
+
+    if (error) {
         console.error('Error deleting customer:', error);
         throw new Error('خطا در حذف مشتری');
     }
 };
 
-export const getCustomerById = (id: string): Customer | undefined => {
-    const customers = getCustomers();
-    return customers.find(c => c.id === id);
+export const getCustomerById = async (id: string): Promise<Customer | undefined> => {
+    const { data, error } = await supabase
+        .from('customers')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+    if (error) {
+        console.error('Error loading customer:', error);
+        return undefined;
+    }
+    return data;
 };
 
 // Company Info Management
-export const getCompanyInfo = (): CompanyInfo | null => {
-    try {
-        const data = localStorage.getItem(COMPANY_KEY);
-        return data ? JSON.parse(data) : null;
-    } catch (error) {
+export const getCompanyInfo = async (): Promise<CompanyInfo | null> => {
+    const { data, error } = await supabase
+        .from('company_info')
+        .select('*')
+        .single();
+
+    if (error) {
+        // If no row found, return null (not an error for first time load)
+        if (error.code === 'PGRST116') return null;
         console.error('Error loading company info:', error);
         return null;
     }
+    return data;
 };
 
-export const saveCompanyInfo = (info: CompanyInfo): void => {
-    try {
-        localStorage.setItem(COMPANY_KEY, JSON.stringify(info));
-    } catch (error) {
+export const saveCompanyInfo = async (info: CompanyInfo): Promise<void> => {
+    // Ensure we always update the same row for company info
+    const payload = { ...info, id: 'default' };
+    const { error } = await supabase
+        .from('company_info')
+        .upsert(payload);
+
+    if (error) {
         console.error('Error saving company info:', error);
-        throw new Error('خطا در ذخیره اطلاعات شرکت');
+        throw new Error(error.message || 'خطا در ذخیره اطلاعات شرکت');
     }
 };
 
 // Expense Categories Management
-export const getCategories = (): ExpenseCategory[] => {
-    try {
-        const data = localStorage.getItem(CATEGORIES_KEY);
-        if (data) return JSON.parse(data);
+export const getCategories = async (): Promise<ExpenseCategory[]> => {
+    const { data, error } = await supabase
+        .from('expense_categories')
+        .select('*');
 
+    if (error) {
+        console.error('Error loading categories:', error);
+        return [];
+    }
+
+    if (!data || data.length === 0) {
         // Seed default categories if none exist
         const defaultCategories: ExpenseCategory[] = [
             { id: '1', title: 'سوخت و انرژی', color: '#ef4444', icon: 'Fuel', isDefault: true },
@@ -89,79 +115,112 @@ export const getCategories = (): ExpenseCategory[] => {
             { id: '7', title: 'سایر هزینه‌ها', color: '#94a3b8', icon: 'MoreHorizontal', isDefault: true },
         ];
 
-        localStorage.setItem(CATEGORIES_KEY, JSON.stringify(defaultCategories));
+        // Insert defaults (map to snake_case for DB)
+        const dbCategories = defaultCategories.map(c => ({
+            id: c.id,
+            title: c.title,
+            color: c.color,
+            icon: c.icon,
+            is_default: c.isDefault
+        }));
+
+        const { error: insertError } = await supabase
+            .from('expense_categories')
+            .insert(dbCategories);
+
+        if (insertError) {
+            console.error('Error seeding categories:', insertError);
+        }
         return defaultCategories;
-    } catch (error) {
-        console.error('Error loading categories:', error);
-        return [];
     }
+
+    // Map snake_case from DB to camelCase for App
+    return data.map((c: any) => ({
+        id: c.id,
+        title: c.title,
+        color: c.color,
+        icon: c.icon,
+        isDefault: c.is_default
+    }));
 };
 
-export const saveCategory = (category: ExpenseCategory): void => {
-    try {
-        const categories = getCategories();
-        const existingIndex = categories.findIndex(c => c.id === category.id);
+export const saveCategory = async (category: ExpenseCategory): Promise<void> => {
+    const { error } = await supabase
+        .from('expense_categories')
+        .upsert({
+            id: category.id,
+            title: category.title,
+            color: category.color,
+            icon: category.icon, // Store icon name as string
+            is_default: category.isDefault
+        });
 
-        if (existingIndex >= 0) {
-            categories[existingIndex] = category;
-        } else {
-            categories.push(category);
-        }
-
-        localStorage.setItem(CATEGORIES_KEY, JSON.stringify(categories));
-    } catch (error) {
+    if (error) {
         console.error('Error saving category:', error);
         throw new Error('خطا در ذخیره دسته‌بندی');
     }
 };
 
-export const deleteCategory = (id: string): void => {
-    try {
-        const categories = getCategories();
-        const filtered = categories.filter(c => c.id !== id);
-        localStorage.setItem(CATEGORIES_KEY, JSON.stringify(filtered));
-    } catch (error) {
+export const deleteCategory = async (id: string): Promise<void> => {
+    const { error } = await supabase
+        .from('expense_categories')
+        .delete()
+        .eq('id', id);
+
+    if (error) {
         console.error('Error deleting category:', error);
         throw new Error('خطا در حذف دسته‌بندی');
     }
 };
 
 // Expenses Management
-export const getExpenses = (): Expense[] => {
-    try {
-        const data = localStorage.getItem(EXPENSES_KEY);
-        return data ? JSON.parse(data) : [];
-    } catch (error) {
+export const getExpenses = async (): Promise<Expense[]> => {
+    const { data, error } = await supabase
+        .from('expenses')
+        .select('*');
+
+    if (error) {
         console.error('Error loading expenses:', error);
         return [];
     }
+
+    // Map snake_case to camelCase if needed, but here we assume types match or we map them
+    // Supabase returns data matching table columns. 
+    // If table has snake_case (category_id), we need to map to camelCase (categoryId)
+    return data?.map((e: any) => ({
+        ...e,
+        categoryId: e.category_id
+    })) || [];
 };
 
-export const saveExpense = (expense: Expense): void => {
-    try {
-        const expenses = getExpenses();
-        const existingIndex = expenses.findIndex(e => e.id === expense.id);
+export const saveExpense = async (expense: Expense): Promise<void> => {
+    const payload = {
+        id: expense.id,
+        amount: expense.amount,
+        date: expense.date,
+        description: expense.description,
+        category_id: expense.categoryId
+    };
 
-        if (existingIndex >= 0) {
-            expenses[existingIndex] = expense;
-        } else {
-            expenses.push(expense);
-        }
+    const { error } = await supabase
+        .from('expenses')
+        .upsert(payload);
 
-        localStorage.setItem(EXPENSES_KEY, JSON.stringify(expenses));
-    } catch (error) {
+    if (error) {
         console.error('Error saving expense:', error);
         throw new Error('خطا در ثبت هزینه');
     }
 };
 
-export const deleteExpense = (id: string): void => {
-    try {
-        const expenses = getExpenses();
-        const filtered = expenses.filter(e => e.id !== id);
-        localStorage.setItem(EXPENSES_KEY, JSON.stringify(filtered));
-    } catch (error) {
+export const deleteExpense = async (id: string): Promise<void> => {
+    const { error } = await supabase
+        .from('expenses')
+        .delete()
+        .eq('id', id);
+
+    if (error) {
         console.error('Error deleting expense:', error);
         throw new Error('خطا در حذف هزینه');
     }
 };
+

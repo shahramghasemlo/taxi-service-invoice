@@ -1,20 +1,93 @@
+# 🚕 تاکسی سرویس هوشمند - سیستم فاکتور و حسابداری
+
 <div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+
+یک برنامه وب کامل برای مدیریت فاکتورها و حسابداری هزینه‌های خودرو
+
+![React](https://img.shields.io/badge/React-18-blue?logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)
+![Vite](https://img.shields.io/badge/Vite-5-purple?logo=vite)
+![Supabase](https://img.shields.io/badge/Supabase-Backend-green?logo=supabase)
+
 </div>
 
-# Run and deploy your AI Studio app
+## ✨ امکانات
 
-This contains everything you need to run your app locally.
+### 📄 ماژول فاکتور
+- صدور فاکتور حرفه‌ای با طراحی زیبا
+- مدیریت مشتریان
+- افزودن سریع مشتری جدید
+- پشتیبانی از تاریخ شمسی
+- چاپ و ذخیره PDF
+- تنظیمات شرکت با لوگو
 
-View your app in AI Studio: https://ai.studio/apps/drive/1Ry-n7DORHFOmVjFIbuBACFp1l6f3PhEz
+### 💰 ماژول حسابداری
+- ثبت هزینه‌های خودرو (سوخت، تعمیرات، بیمه و ...)
+- داشبورد گرافیکی
+- تاریخچه هزینه‌ها
+- گزارشات تفکیکی
+- مدیریت سرفصل‌های هزینه
 
-## Run Locally
+## 🚀 نصب و راه‌اندازی
 
-**Prerequisites:**  Node.js
+### پیش‌نیازها
+- Node.js 18+
+- حساب Supabase
 
+### مراحل نصب
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+1. **کلون کردن مخزن:**
+```bash
+git clone https://github.com/YOUR_USERNAME/taxi-service-invoice.git
+cd taxi-service-invoice
+```
+
+2. **نصب وابستگی‌ها:**
+```bash
+npm install
+```
+
+3. **تنظیم متغیرهای محیطی:**
+```bash
+cp .env.example .env.local
+```
+فایل `.env.local` را ویرایش کرده و اطلاعات Supabase خود را وارد کنید.
+
+4. **ایجاد جداول دیتابیس:**
+محتوای فایل `supabase_schema.sql` را در SQL Editor پنل Supabase اجرا کنید.
+
+5. **اجرای برنامه:**
+```bash
+npm run dev
+```
+
+## 🛠️ تکنولوژی‌ها
+
+- **Frontend:** React 18 + TypeScript
+- **Styling:** Tailwind CSS
+- **Build Tool:** Vite
+- **Backend:** Supabase (PostgreSQL + Auth)
+- **Icons:** Lucide React
+
+## 📁 ساختار پروژه
+
+```
+taxi-service-invoice/
+├── components/
+│   ├── accounting/      # ماژول حسابداری
+│   ├── auth/            # احراز هویت
+│   └── invoice/         # ماژول فاکتور
+├── services/            # سرویس‌های API
+├── types.ts             # تایپ‌های TypeScript
+└── App.tsx              # کامپوننت اصلی
+```
+
+## 📝 License
+
+MIT License
+
+---
+
+<div align="center">
+ساخته شده با ❤️ برای رانندگان تاکسی ایران
+</div>

@@ -13,15 +13,19 @@ export const ExpenseHistory: React.FC = () => {
         loadData();
     }, []);
 
-    const loadData = () => {
-        setExpenses(getExpenses().sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
-        setCategories(getCategories());
+    const loadData = async () => {
+        const [expensesData, categoriesData] = await Promise.all([
+            getExpenses(),
+            getCategories()
+        ]);
+        setExpenses(expensesData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+        setCategories(categoriesData);
     };
 
-    const handleDelete = (id: string) => {
+    const handleDelete = async (id: string) => {
         if (confirm('آیا از حذف این هزینه مطمئن هستید؟')) {
             try {
-                deleteExpense(id);
+                await deleteExpense(id);
                 loadData();
             } catch (error) {
                 alert('خطا در حذف هزینه');

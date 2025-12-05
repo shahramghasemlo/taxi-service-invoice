@@ -1,23 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { Expense, ExpenseCategory } from '../../types';
 import { getCategories, saveExpense } from '../../services/storageService';
+import { getPersianDate } from '../../types';
 import { Save, Calendar, DollarSign, FileText, Gauge, Tag } from 'lucide-react';
 
 export const ExpenseEntry: React.FC<{ onSave: () => void }> = ({ onSave }) => {
     const [categories, setCategories] = useState<ExpenseCategory[]>([]);
     const [formData, setFormData] = useState<Partial<Expense>>({
         amount: 0,
-        date: new Date().toISOString().split('T')[0],
+        date: getPersianDate(new Date()),
         description: '',
         odometer: undefined,
         categoryId: ''
     });
 
     useEffect(() => {
-        setCategories(getCategories());
+        const loadCategories = async () => {
+            const data = await getCategories();
+            setCategories(data);
+        };
+        loadCategories();
     }, []);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (!formData.categoryId || !formData.amount || !formData.date) {
@@ -36,11 +41,11 @@ export const ExpenseEntry: React.FC<{ onSave: () => void }> = ({ onSave }) => {
         };
 
         try {
-            saveExpense(expense);
+            await saveExpense(expense);
             // Reset form
             setFormData({
                 amount: 0,
-                date: new Date().toISOString().split('T')[0],
+                date: getPersianDate(new Date()),
                 description: '',
                 odometer: undefined,
                 categoryId: ''
@@ -76,8 +81,8 @@ export const ExpenseEntry: React.FC<{ onSave: () => void }> = ({ onSave }) => {
                                     type="button"
                                     onClick={() => setFormData({ ...formData, categoryId: cat.id })}
                                     className={`p-3 rounded-xl border text-sm font-medium transition-all flex flex-col items-center gap-2 ${formData.categoryId === cat.id
-                                            ? 'bg-indigo-50 border-indigo-500 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 ring-2 ring-indigo-200 dark:ring-indigo-800'
-                                            : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300'
+                                        ? 'bg-indigo-50 border-indigo-500 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 ring-2 ring-indigo-200 dark:ring-indigo-800'
+                                        : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300'
                                         }`}
                                 >
                                     <div
@@ -117,10 +122,12 @@ export const ExpenseEntry: React.FC<{ onSave: () => void }> = ({ onSave }) => {
                         <div className="relative">
                             <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                             <input
-                                type="date"
+                                type="text"
                                 value={formData.date}
                                 onChange={e => setFormData({ ...formData, date: e.target.value })}
                                 className="w-full pr-10 pl-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
+                                placeholder="1403/01/01"
+                                dir="ltr"
                             />
                         </div>
                     </div>
