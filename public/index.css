@@ -1,0 +1,246 @@
+/* ============================================
+   Global Styles - Eye-Friendly Colors
+   ============================================ */
+
+/* Root CSS Variables for easy customization */
+:root {
+  /* Soft, warm background colors */
+  --bg-primary: #f5f0e8;          /* Warm cream */
+  --bg-secondary: #e8e4dc;         /* Soft beige */
+  --bg-tertiary: #faf8f5;          /* Very light cream */
+  
+  /* Gentle accent colors */
+  --accent-primary: #7c9c87;       /* Sage green */
+  --accent-secondary: #a8c5b5;     /* Light sage */
+  --accent-warm: #d4a574;          /* Warm terracotta */
+  
+  /* Text colors - softer than pure black */
+  --text-primary: #3d3d3d;         /* Soft dark gray */
+  --text-secondary: #5a5a5a;       /* Medium gray */
+  --text-muted: #7a7a7a;           /* Light gray */
+  
+  /* Border colors */
+  --border-light: #e0dcd4;
+  --border-medium: #c8c3b8;
+  
+  /* Shadow for depth */
+  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+/* Dark mode variables - softer dark theme */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-primary: #2a2a2f;         /* Soft dark blue-gray */
+    --bg-secondary: #35353a;        /* Slightly lighter */
+    --bg-tertiary: #3a3a40;         /* Card backgrounds */
+    
+    --accent-primary: #8fb598;      /* Muted sage green */
+    --accent-secondary: #6b9a78;    /* Darker sage */
+    --accent-warm: #d4a574;         /* Warm terracotta */
+    
+    --text-primary: #e8e6e3;        /* Soft white */
+    --text-secondary: #b8b5b0;      /* Muted light gray */
+    --text-muted: #8a8780;          /* Darker muted */
+    
+    --border-light: #404045;
+    --border-medium: #505055;
+    
+    --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.2);
+    --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* Base body styles */
+body {
+  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+  color: var(--text-primary);
+  min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Container backgrounds */
+.bg-gray-100 {
+  background: var(--bg-primary) !important;
+}
+
+.bg-gray-50 {
+  background: var(--bg-tertiary) !important;
+}
+
+/* Dark mode backgrounds */
+.dark .bg-gray-900,
+.dark\:bg-gray-900 {
+  background: var(--bg-primary) !important;
+}
+
+.dark .bg-gray-800,
+.dark\:bg-gray-800 {
+  background: var(--bg-secondary) !important;
+}
+
+/* Card and panel styling */
+.bg-white {
+  background: var(--bg-tertiary) !important;
+  box-shadow: var(--shadow-soft);
+}
+
+.dark .bg-gray-700 {
+  background: var(--bg-tertiary) !important;
+}
+
+/* Softer borders */
+.border-gray-200,
+.border-gray-300 {
+  border-color: var(--border-light) !important;
+}
+
+.dark .border-gray-600,
+.dark .border-gray-700 {
+  border-color: var(--border-light) !important;
+}
+
+/* Text colors */
+.text-gray-900 {
+  color: var(--text-primary) !important;
+}
+
+.text-gray-700,
+.text-gray-600 {
+  color: var(--text-secondary) !important;
+}
+
+.text-gray-500,
+.text-gray-400 {
+  color: var(--text-muted) !important;
+}
+
+/* Accent colors - replacing harsh yellows with warmer tones */
+.bg-yellow-500,
+.bg-yellow-400 {
+  background: var(--accent-warm) !important;
+}
+
+.text-yellow-600,
+.text-yellow-500 {
+  color: var(--accent-warm) !important;
+}
+
+.border-yellow-500,
+.border-yellow-400 {
+  border-color: var(--accent-warm) !important;
+}
+
+/* Hover effects - smooth transitions */
+.hover\:bg-yellow-600:hover {
+  background: #c49466 !important;
+}
+
+/* Focus rings - softer style */
+button:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+/* Scrollbar styling for a cleaner look */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-medium);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Smooth animations */
+* {
+  transition-property: background-color, border-color, color, box-shadow;
+  transition-duration: 0.2s;
+  transition-timing-function: ease-in-out;
+}
+
+/* Input fields - softer styling */
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="tel"],
+input[type="date"],
+select,
+textarea {
+  background: var(--bg-tertiary) !important;
+  border-color: var(--border-light) !important;
+  color: var(--text-primary) !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-muted) !important;
+}
+
+/* Table styling */
+table {
+  background: var(--bg-tertiary);
+}
+
+th {
+  background: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
+tr:nth-child(even) {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.dark tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Button styling - more refined */
+button {
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-medium);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+/* Modal/overlay backgrounds */
+.fixed.inset-0.bg-black {
+  background: rgba(0, 0, 0, 0.4) !important;
+  backdrop-filter: blur(4px);
+}
+
+/* Main content wrapper */
+#root {
+  min-height: 100vh;
+}
+
+/* Gradient background animation (subtle) */
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animated-bg {
+  background-size: 200% 200%;
+  animation: gradientShift 15s ease infinite;
+}
